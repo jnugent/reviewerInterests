@@ -105,15 +105,38 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 			$smarty =& $params[0];
 			$templateName =& $params[1];
 
-			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl') {
+			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl' || $templateName == 'sectionEditor/selectReviewer.tpl' || $templateName == 'sectionEditor/createReviewerForm.tpl') {
 				// fetch the original template.
 				$contents = $smarty->fetch($templateName);
 				if ($templateName == 'user/profile.tpl') {
 				$contents = preg_replace('|<td class="label">\s*(<label for="interests"\s*>.*?</label>)\s*</td>\s*<td\s+.*?</td>|s',
 						'<td class="label">$1</td><td>'. $this->getReviewerSelect() . '</td>', $contents);
-				} else {
+				} else if ($templateName == 'sectionEditor/createReviewerForm.tpl') {
+					$contents = preg_replace('|<td class="value">\s*<script\s.*?>.*?</script>\s*<div id="interests">.*?</div>\s*</td>|s',
+						'<td class="value">'. $this->getReviewerSelect() . '</td>', $contents);
+				} else if ($templateName == 'user/register.tpl') {
 					$contents = preg_replace('|<div id="reviewerInterestsContainer".*?>\s*(<label class="desc">.*?</label>).*?</div>\s*</td>|s',
 						'$1<br /><div style="margin: 5px;">' . $this->getReviewerSelect() . '</div></td>' , $contents);
+				} else {
+
+					// First, remove the option for interests if it is there.
+					$contents = preg_replace('|<option\s+label="[^"]+"\s+value="interests">.*?</option>|s', '', $contents);
+
+					// Second, add the new field for reviewer interests.
+					$formTag = '';
+					$submitButton = '';
+					if (preg_match('|(<form.+?selectReviewer.*?>)|', $contents, $matches)) {
+						$formTag = $matches[1];
+					}
+
+					if (preg_match('|(<input.+?type="submit".*?>)|', $contents, $matches)) {
+						$submitButton = $matches[1];
+					}
+
+					$contents = preg_replace('|</form>|',
+						'</form><br />' . __('search.operator.or') . $formTag .
+						'<input type="hidden" name="searchField" value="interests"/>' .
+						'<p>' . __('user.interests') . '&nbsp;' . $this->getReviewerSelect('search', false) . $submitButton . '</p></form>', $contents);
 				}
 
 				$params[4] = $contents;
@@ -168,11 +191,14 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	/**
 	 * Return a string containing the HTML for the selector for choosing
 	 * reviewer interests.
+	 * @param $name the field name
+	 * @param $isMultiple is this a multi select field.
 	 * @return string
 	 */
-	function getReviewerSelect() {
+	function getReviewerSelect($name = "keywords[interests][]", $isMultiple = true) {
 
-		$html = '<select name="keywords[interests][]" size="5" multiple="multiple">';
+		$html = '<select name="' . $name . '" ';
+		$html .= $isMultiple ? 'size="5" multiple="multiple">' : '>';
 
 		$journal =& Request::getJournal();
 		$user =& Request::getUser();
