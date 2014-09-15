@@ -120,7 +120,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 				} else {
 
 					// First, remove the option for interests if it is there.
-					$contents = preg_replace('|<option\s+label="[^"]+"\s+value="interests">.*?</option>|s', '', $contents);
+					$contents = preg_replace('|<option\s+[^>]*\s+value="interests"[^>]*>.*?</option>|s', '', $contents);
 
 					// Second, add the new field for reviewer interests.
 					$formTag = '';
@@ -133,10 +133,15 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 						$submitButton = $matches[1];
 					}
 
+					// if they submitted a search on the interests field, fix up the text search field and set the select dropdown.
+					if (Request::getUserVar('searchField') == 'interests') {
+
+					}
 					$contents = preg_replace('|</form>|',
 						'</form><br />' . __('search.operator.or') . $formTag .
 						'<input type="hidden" name="searchField" value="interests"/>' .
-						'<p>' . __('user.interests') . '&nbsp;' . $this->getReviewerSelect('search', false) . $submitButton . '</p></form>', $contents);
+						'<input type="hidden" name="searchMatch" value="is"/>' .
+						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search', false, Request::getUserVar('search')) . $submitButton . '</p></form>', $contents);
 				}
 
 				$params[4] = $contents;
@@ -193,9 +198,10 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	 * reviewer interests.
 	 * @param $name the field name
 	 * @param $isMultiple is this a multi select field.
+	 * @param $chosenInterests an array of values to preselect.
 	 * @return string
 	 */
-	function getReviewerSelect($name = "keywords[interests][]", $isMultiple = true) {
+	function getReviewerSelect($name = "keywords[interests][]", $isMultiple = true, $chosenInterests = null) {
 
 		$html = '<select name="' . $name . '" ';
 		$html .= $isMultiple ? 'size="5" multiple="multiple">' : '>';
@@ -204,11 +210,16 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		$user =& Request::getUser();
 		$existingInterests = array();
 
-		if ($user) {
+		if ($user && !$chosenInterests) {
 			import('lib.pkp.classes.user.InterestManager');
 			$interestManager = new InterestManager();
 			$existingInterests = $interestManager->getInterestsForUser($user);
 		}
+
+		if (is_array($chosenInterests)) {
+			$existingInterests = $chosenInterests;
+		}
+
 		$interests = $this->getSetting($journal->getId(), 'reviewerInterests');
 
 		foreach ($interests as $interest) {
