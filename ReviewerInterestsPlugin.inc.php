@@ -100,16 +100,21 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	 * Insert Google Scholar account info into author submission step 3
 	 */
 	function insertInterests($hookName, $params) {
-error_log('called');
+
 		if ($this->getEnabled()) {
 			$smarty =& $params[0];
 			$templateName =& $params[1];
 
-			if ($templateName == 'user/profile.tpl') {
+			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl') {
 				// fetch the original template.
 				$contents = $smarty->fetch($templateName);
+				if ($templateName == 'user/profile.tpl') {
 				$contents = preg_replace('|<td class="label">\s*(<label for="interests"\s*>.*?</label>)\s*</td>\s*<td\s+.*?</td>|s',
 						'<td class="label">$1</td><td>'. $this->getReviewerSelect() . '</td>', $contents);
+				} else {
+					$contents = preg_replace('|<div id="reviewerInterestsContainer".*?>\s*(<label class="desc">.*?</label>).*?</div>\s*</td>|s',
+						'$1<br /><div style="margin: 5px;">' . $this->getReviewerSelect() . '</div></td>' , $contents);
+				}
 
 				$params[4] = $contents;
 				return true;
@@ -171,14 +176,18 @@ error_log('called');
 
 		$journal =& Request::getJournal();
 		$user =& Request::getUser();
+		$existingInterests = array();
 
-		import('lib.pkp.classes.user.InterestManager');
-		$interestManager = new InterestManager();
-		$existingInterests = $interestManager->getInterestsForUser($user);
+		if ($user) {
+			import('lib.pkp.classes.user.InterestManager');
+			$interestManager = new InterestManager();
+			$existingInterests = $interestManager->getInterestsForUser($user);
+		}
 		$interests = $this->getSetting($journal->getId(), 'reviewerInterests');
+
 		foreach ($interests as $interest) {
 			$isSelected = in_array($interest, $existingInterests) ? 'selected="selected"' : '';
-			$html .= '<option value="' . htmlentities($interest) . '" ' . $isSelected . '>' . htmlentities($interest). '</option>';
+			$html .= '<option value="' . htmlentities($interest) . '" ' . $isSelected . '>' . htmlentities($interest) . '</option>';
 		}
 
 		$html .= '</select>';
