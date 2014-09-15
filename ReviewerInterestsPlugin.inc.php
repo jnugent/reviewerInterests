@@ -100,7 +100,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	 * Insert Google Scholar account info into author submission step 3
 	 */
 	function insertInterests($hookName, $params) {
-
+error_log('called');
 		if ($this->getEnabled()) {
 			$smarty =& $params[0];
 			$templateName =& $params[1];
@@ -166,7 +166,22 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	 * @return string
 	 */
 	function getReviewerSelect() {
-		$html = '';
+
+		$html = '<select name="keywords[interests][]" size="5" multiple="multiple">';
+
+		$journal =& Request::getJournal();
+		$user =& Request::getUser();
+
+		import('lib.pkp.classes.user.InterestManager');
+		$interestManager = new InterestManager();
+		$existingInterests = $interestManager->getInterestsForUser($user);
+		$interests = $this->getSetting($journal->getId(), 'reviewerInterests');
+		foreach ($interests as $interest) {
+			$isSelected = in_array($interest, $existingInterests) ? 'selected="selected"' : '';
+			$html .= '<option value="' . htmlentities($interest) . '" ' . $isSelected . '>' . htmlentities($interest). '</option>';
+		}
+
+		$html .= '</select>';
 
 		return $html;
 	}
