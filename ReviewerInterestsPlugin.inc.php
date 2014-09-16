@@ -135,13 +135,13 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 
 					// if they submitted a search on the interests field, fix up the text search field and set the select dropdown.
 					if (Request::getUserVar('searchField') == 'interests') {
-
+						$contents = preg_replace('|(<input type="text" size="10" name="search" class="textField" value=").*?(" />)|', '$1$2', $contents);
 					}
 					$contents = preg_replace('|</form>|',
 						'</form><br />' . __('search.operator.or') . $formTag .
 						'<input type="hidden" name="searchField" value="interests"/>' .
 						'<input type="hidden" name="searchMatch" value="is"/>' .
-						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search', false, Request::getUserVar('search')) . $submitButton . '</p></form>', $contents);
+						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search', false, Request::getUserVar('searchField') == 'interests' ? array(Request::getUserVar('search')) : null) . $submitButton . '</p></form>', $contents);
 				}
 
 				$params[4] = $contents;
