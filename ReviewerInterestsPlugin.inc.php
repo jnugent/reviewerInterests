@@ -137,8 +137,8 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 					if (Request::getUserVar('searchField') == 'interests') {
 						$contents = preg_replace('|(<input type="text" size="10" name="search" class="textField" value=").*?(" />)|', '$1$2', $contents);
 					}
-					$contents = preg_replace('|</form>|',
-						'</form><br />' . __('search.operator.or') . $formTag .
+					$contents = preg_replace('|(<form.+?selectReviewer.*?>.*?</form>)|s',
+						'$1<br />' . __('search.operator.or') . $formTag .
 						'<input type="hidden" name="searchField" value="interests"/>' .
 						'<input type="hidden" name="searchMatch" value="is"/>' .
 						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search', false, Request::getUserVar('searchField') == 'interests' ? array(Request::getUserVar('search')) : null) . $submitButton . '</p></form>', $contents);
