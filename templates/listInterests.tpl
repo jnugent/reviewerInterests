@@ -19,23 +19,21 @@
 
 <br />
 
-<form method="post" action="{plugin_url path="settings"}">
 {include file="common/formErrors.tpl"}
 
+<p><a href="{plugin_url path="manageInterest"}">{translate key="plugins.generic.reviewerInterests.manager.settings.createNewInterest"}</a></p>
 <table width="100%" class="data">
-<tr valign="top">
-	<td class="label">{fieldLabel name="interests" key="user.interests"}</td>
-	<td class="value">
-		{include file="form/interestsInput.tpl" FBV_interestsKeywords=$interestsKeywords}
-	</td>
-</tr>
+	{foreach from=$interestEntries item=interest}
+		<tr>
+		<td>
+			{foreach from=$formLocales item=locale key=abbrev}{$interest->getKeyword($abbrev)}{/foreach}
+		</td>
+		<td>
+		<td><a href="{plugin_url path="manageInterest" reviewerInterestEntryId=$interest->getId()}">{translate key="common.edit"}</a> | <a onclick="return confirm('{translate|escape:"jsparam" key="plugins.generic.reviewerInterests.manager.settings.confirmDelete"}')" href="{plugin_url path="deleteInterest" reviewerInterestEntryId=$interest->getId()}">{translate key="common.delete"}</a>
+		</td>
+		</tr>
+	{/foreach}
 </table>
-
 <br/>
-
-<input type="submit" name="save" class="button defaultButton" value="{translate key="common.save"}"/><input type="button" class="button" value="{translate key="common.cancel"}" onclick="history.go(-1)"/>
-</form>
-
-<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 </div>
 {include file="common/footer.tpl"}

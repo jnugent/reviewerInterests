@@ -23,5 +23,9 @@
 	<message key="plugins.generic.reviewerInterests.manager.settings.description"><![CDATA[<p>With this plugin enabled, an administrator can configure a list of reviewer interests.</p>]]></message>
 
 	<!-- Form Validation -->
-	<message key="plugins.generic.reviewerAnalytics.manager.settings.reviewerInterestsRequired">At least one interest must be specified.</message>
+	<message key="plugins.generic.reviewerInterests.manager.settings.reviewerInterestsRequired">At least one interest must be specified.</message>
+
+	<!--  Form Keys -->
+	<message key="plugins.generic.reviewerInterests.manager.settings.createNewInterest">Create a new interest</message>
+	<message key="plugins.generic.reviewerInterests.manager.settings.confirmDelete">Confirm Deletion?</message>
 </locale>

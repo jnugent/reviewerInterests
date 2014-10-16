@@ -26,6 +26,18 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		$success = parent::register($category, $path);
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		if ($success && $this->getEnabled()) {
+
+			$this->import('ReviewerInterestsKeywordDAO');
+			$this->import('ReviewerInterestsEntryKeywordDAO');
+
+			$this->import('ReviewerInterestsKeyword');
+
+			$reviewerInterestsKeywordDao = new ReviewerInterestsKeywordDAO();
+			$returner =& DAORegistry::registerDAO('ReviewerInterestsKeywordDAO', $reviewerInterestsKeywordDao);
+
+			$reviewerInterestsEntryKeywordDao = new ReviewerInterestsEntryKeywordDAO();
+			$returner =& DAORegistry::registerDAO('ReviewerInterestsEntryKeywordDAO', $reviewerInterestsEntryKeywordDao);
+
 			// Replace interests block on user profile with dropdown containing constrained list.
 			HookRegistry::register('TemplateManager::display', array($this, 'insertInterests'));
 		}
@@ -162,14 +174,21 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	function manage($verb, $args, &$message, &$messageParams) {
 		if (!parent::manage($verb, $args, $message, $messageParams)) return false;
 
-		switch ($verb) {
-			case 'settings':
-				$templateMgr =& TemplateManager::getManager();
-				$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
-				$journal =& Request::getJournal();
+		$templateMgr =& TemplateManager::getManager();
+		$templateMgr->register_function('plugin_url', array(&$this, 'smartyPluginUrl'));
+		$journal =& Request::getJournal();
 
-				$this->import('ReviewerInterestsSettingsForm');
-				$form = new ReviewerInterestsSettingsForm($this, $journal->getId());
+		switch ($verb) {
+
+			case 'deleteInterest':
+				$reviewerInterestEntryId = (int) Request::getUserVar('reviewerInterestEntryId');
+				$interestEntryDao =& DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');
+				$interestEntryDao->deleteObjectById($reviewerInterestEntryId);
+				return true;
+			case 'manageInterest':
+				$reviewerInterestEntryId = (int)Request::getUserVar('reviewerInterestEntryId');
+				$this->import('ReviewerInterestForm');
+				$form = new ReviewerInterestForm($this, $journal->getId(), $reviewerInterestEntryId);
 				if (Request::getUserVar('save')) {
 					$form->readInputData();
 					if ($form->validate()) {
@@ -186,6 +205,30 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 					$form->display();
 				}
 				return true;
+			case 'updateInterest':
+				$reviewerInterestEntryId = (int) Request::getUserVar('reviewerInterestEntryId');
+				$this->import('ReviewerInterestForm');
+				$form = new ReviewerInterestForm($this, $journal->getId(), $reviewerInterestEntryId);
+				$form->readInputData();
+
+				if ($form->validate()) {
+					$form->execute();
+				}
+				return true;
+			case 'settings':
+
+				$templateMgr =& TemplateManager::getManager();
+
+				$interestDao = DAORegistry::getDAO('ReviewerInterestsKeywordDAO');
+				$interestEntryDao = DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');
+
+				$interests = $interestDao->build($journal->getId());
+				$interestEntries = $interestEntryDao->getByControlledVocabId($interests->getId());
+				$templateMgr->assign_by_ref('interestEntries', $interestEntries->toArray());
+				$templateMgr->assign_by_ref('formLocales', AppLocale::getSupportedFormLocales());
+				$templateMgr->display($this->getTemplatePath() . 'templates/listInterests.tpl');
+
+				return true;
 			default:
 				// Unknown management verb
 				assert(false);
@@ -196,9 +239,9 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	/**
 	 * Return a string containing the HTML for the selector for choosing
 	 * reviewer interests.
-	 * @param $name the field name
-	 * @param $isMultiple is this a multi select field.
-	 * @param $chosenInterests an array of values to preselect.
+	 * @param $name string the field name
+	 * @param $isMultiple boolean is this a multi select field.
+	 * @param $chosenInterests array of values to preselect.
 	 * @return string
 	 */
 	function getReviewerSelect($name = "keywords[interests][]", $isMultiple = true, $chosenInterests = null) {
