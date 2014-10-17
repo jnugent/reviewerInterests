@@ -263,11 +263,13 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 			$existingInterests = $chosenInterests;
 		}
 
-		$interests = $this->getSetting($journal->getId(), 'reviewerInterests');
+		$interestDao = DAORegistry::getDAO('ReviewerInterestsKeywordDAO');
+		$vocab = $interestDao->build($journal->getId());
+		$interests = $interestDao->enumerate($vocab->getId(), CONTROLLED_VOCAB_PLUGIN_REVIEWER_INTEREST_KEYWORD);
 
-		foreach ($interests as $interest) {
-			$isSelected = in_array($interest, $existingInterests) ? 'selected="selected"' : '';
-			$html .= '<option value="' . htmlentities($interest) . '" ' . $isSelected . '>' . htmlentities($interest) . '</option>';
+		foreach ($interests as $id => $entry) {
+			$isSelected = in_array($entry, $existingInterests) ? 'selected="selected"' : '';
+			$html .= '<option value="' . htmlentities($entry) . '" ' . $isSelected . '>' . htmlentities($entry) . '</option>';
 		}
 
 		$html .= '</select>';
