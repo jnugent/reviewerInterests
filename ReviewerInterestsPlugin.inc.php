@@ -184,7 +184,8 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 				$reviewerInterestEntryId = (int) Request::getUserVar('reviewerInterestEntryId');
 				$interestEntryDao =& DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');
 				$interestEntryDao->deleteObjectById($reviewerInterestEntryId);
-				return true;
+				Request::redirect(null, 'manager', 'plugin');
+				return false;
 			case 'manageInterest':
 				$reviewerInterestEntryId = (int)Request::getUserVar('reviewerInterestEntryId');
 				$this->import('ReviewerInterestForm');
