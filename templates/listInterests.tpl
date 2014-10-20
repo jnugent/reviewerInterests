@@ -26,7 +26,7 @@
 	{foreach from=$interestEntries item=interest}
 		<tr>
 		<td>
-			{foreach from=$formLocales item=locale key=abbrev}{$interest->getKeyword($abbrev)}{/foreach}
+			{foreach from=$formLocales item=locale name=localeLoop key=abbrev}{$interest->getKeyword($abbrev)}{if !$smarty.foreach.localeLoop.last} --- {/if}{/foreach}
 		</td>
 		<td>
 		<td><a href="{plugin_url path="manageInterest" reviewerInterestEntryId=$interest->getId()}">{translate key="common.edit"}</a> | <a onclick="return confirm('{translate|escape:"jsparam" key="plugins.generic.reviewerInterests.manager.settings.confirmDelete"}')" href="{plugin_url path="deleteInterest" reviewerInterestEntryId=$interest->getId()}">{translate key="common.delete"}</a>
