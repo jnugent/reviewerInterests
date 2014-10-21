@@ -117,13 +117,13 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 			$smarty =& $params[0];
 			$templateName =& $params[1];
 
-			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl' || $templateName == 'sectionEditor/selectReviewer.tpl' || $templateName == 'sectionEditor/createReviewerForm.tpl') {
+			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl' || $templateName == 'manager/people/userProfileForm.tpl' || $templateName == 'sectionEditor/selectReviewer.tpl' || $templateName == 'sectionEditor/createReviewerForm.tpl') {
 				// fetch the original template.
 				$contents = $smarty->fetch($templateName);
 				if ($templateName == 'user/profile.tpl') {
 				$contents = preg_replace('|<td class="label">\s*(<label for="interests"\s*>.*?</label>)\s*</td>\s*<td\s+.*?</td>|s',
 						'<td class="label">$1</td><td>'. $this->getReviewerSelect() . '</td>', $contents);
-				} else if ($templateName == 'sectionEditor/createReviewerForm.tpl') {
+				} else if ($templateName == 'sectionEditor/createReviewerForm.tpl' || $templateName == 'manager/people/userProfileForm.tpl') {
 					$contents = preg_replace('|<td class="value">\s*<script\s.*?>.*?</script>\s*<div id="interests">.*?</div>\s*</td>|s',
 						'<td class="value">'. $this->getReviewerSelect() . '</td>', $contents);
 				} else if ($templateName == 'user/register.tpl') {
