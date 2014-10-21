@@ -181,21 +181,30 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		switch ($verb) {
 			case 'syncInterests':
 				// propagate existing reviewer interests to the new list for the plugin.
-				import('lib.pkp.classes.user.InterestManager');
-				$interestManager = new InterestManager();
-				$interests = $interestDao->getAllInterests();
+				$interestDao =& DAORegistry::getDAO('InterestDAO');
+				$interestEntryDao =& DAORegistry::getDAO('InterestEntryDAO');
+				$controlledVocab = $interestDao->build();
+				$existingEntries = $interestDao->enumerate($controlledVocab->getId(), CONTROLLED_VOCAB_INTEREST);
 
+				// new list.
 				$reviewerInterestDao = DAORegistry::getDAO('ReviewerInterestsKeywordDAO');
 				$interestEntryDao = DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');
 				$newControlledVocab = $reviewerInterestDao->build($journal->getId());
 
-				$entry = $interestEntryDao->newDataObject();
-				$entry->setControlledVocabId($newControlledVocab->getId());
+				$locales = AppLocale::getSupportedFormLocales();
 
-				foreach ($interests AS $locale => $interest) {
-					$entry->setKeyword(urldecode($interest), $locale);
+				foreach ($existingEntries as $id => $entry) {
+					$interestEntry = $interestEntryDao->getById($id);
+					$newInterestEntry = $interestEntryDao->newDataObject();
+					$newInterestEntry->setControlledVocabId($newControlledVocab->getId());
+
+					foreach ($locales AS $locale => $string) {
+						$interest = $interestEntry->getData('interest', $locale);
+						$newInterestEntry->setKeyword($interest, $locale);
+					}
+					$interestEntryDao->insertObject($newInterestEntry);
+
 				}
-				$interestEntryDao->insertDataObject($entry);
 
 				Request::redirect(null, 'manager', 'plugin');
 				return true;
