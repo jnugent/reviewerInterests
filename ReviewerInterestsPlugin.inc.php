@@ -136,13 +136,9 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 
 					// Second, add the new field for reviewer interests.
 					$formTag = '';
-					$submitButton = '';
+					$submitButton = '<input type="submit" value="' . __('common.search') . '" class="button" />';
 					if (preg_match('|(<form.+?selectReviewer.*?>)|', $contents, $matches)) {
 						$formTag = $matches[1];
-					}
-
-					if (preg_match('|(<input.+?type="submit".*?>)|', $contents, $matches)) {
-						$submitButton = $matches[1];
 					}
 
 					// if they submitted a search on the interests field, fix up the text search field and set the select dropdown.
