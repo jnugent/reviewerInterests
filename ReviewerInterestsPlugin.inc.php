@@ -179,7 +179,26 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		$journal =& Request::getJournal();
 
 		switch ($verb) {
+			case 'syncInterests':
+				// propagate existing reviewer interests to the new list for the plugin.
+				import('lib.pkp.classes.user.InterestManager');
+				$interestManager = new InterestManager();
+				$interests = $interestDao->getAllInterests();
 
+				$reviewerInterestDao = DAORegistry::getDAO('ReviewerInterestsKeywordDAO');
+				$interestEntryDao = DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');
+				$newControlledVocab = $reviewerInterestDao->build($journal->getId());
+
+				$entry = $interestEntryDao->newDataObject();
+				$entry->setControlledVocabId($newControlledVocab->getId());
+
+				foreach ($interests AS $locale => $interest) {
+					$entry->setKeyword(urldecode($interest), $locale);
+				}
+				$interestEntryDao->insertDataObject($entry);
+
+				Request::redirect(null, 'manager', 'plugin');
+				return true;
 			case 'deleteInterest':
 				$reviewerInterestEntryId = (int) Request::getUserVar('reviewerInterestEntryId');
 				$interestEntryDao =& DAORegistry::getDAO('ReviewerInterestsEntryKeywordDAO');

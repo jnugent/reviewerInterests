@@ -27,5 +27,6 @@
 
 	<!--  Form Keys -->
 	<message key="plugins.generic.reviewerInterests.manager.settings.createNewInterest">Create a new interest</message>
+	<message key="plugins.generic.reviewerInterests.manager.settings.syncInterests">Sync Interests</message>
 	<message key="plugins.generic.reviewerInterests.manager.settings.confirmDelete">Confirm Deletion?</message>
 </locale>

@@ -34,6 +34,9 @@
 		</tr>
 	{/foreach}
 </table>
+
+<p><a href="{plugin_url path="syncInterests"}">{translate key="plugins.generic.reviewerInterests.manager.settings.syncInterests"}</a></p>
+
 <br/>
 </div>
 {include file="common/footer.tpl"}
