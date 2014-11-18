@@ -250,7 +250,9 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 				$interests = $interestDao->build($journal->getId());
 				$interestEntries = $interestEntryDao->getByControlledVocabId($interests->getId());
 				$templateMgr->assign_by_ref('interestEntries', $interestEntries->toArray());
-				$templateMgr->assign_by_ref('formLocales', AppLocale::getSupportedFormLocales());
+				$locales = AppLocale::getSupportedFormLocales();
+				asort($locales);
+				$templateMgr->assign_by_ref('formLocales', $locales);
 				$templateMgr->display($this->getTemplatePath() . 'templates/listInterests.tpl');
 
 				return true;
