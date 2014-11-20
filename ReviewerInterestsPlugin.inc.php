@@ -249,7 +249,9 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 
 				$interests = $interestDao->build($journal->getId());
 				$interestEntries = $interestEntryDao->getByControlledVocabId($interests->getId());
-				$templateMgr->assign_by_ref('interestEntries', $interestEntries->toArray());
+				$interestEntries = $interestEntries->toArray();
+				usort($interestEntries, create_function('$s1, $s2', 'return strcmp($s1->getKeyword(\'en_US\'), $s2->getKeyword(\'en_US\'));'));
+				$templateMgr->assign_by_ref('interestEntries', $interestEntries);
 				$locales = AppLocale::getSupportedFormLocales();
 				asort($locales);
 				$templateMgr->assign_by_ref('formLocales', $locales);
@@ -293,6 +295,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		$interestDao = DAORegistry::getDAO('ReviewerInterestsKeywordDAO');
 		$vocab = $interestDao->build($journal->getId());
 		$interests = $interestDao->enumerate($vocab->getId(), CONTROLLED_VOCAB_PLUGIN_REVIEWER_INTEREST_KEYWORD);
+		usort($interests, create_function('$s1, $s2', 'return strcmp($s1, $s2);'));
 
 		foreach ($interests as $id => $entry) {
 			$isSelected = in_array($entry, $existingInterests) ? 'selected="selected"' : '';
