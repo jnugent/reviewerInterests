@@ -116,8 +116,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		if ($this->getEnabled()) {
 			$smarty =& $params[0];
 			$templateName =& $params[1];
-
-			if ($templateName == 'user/profile.tpl' || $templateName == 'user/register.tpl' || $templateName == 'manager/people/userProfileForm.tpl' || $templateName == 'sectionEditor/selectReviewer.tpl' || $templateName == 'sectionEditor/createReviewerForm.tpl') {
+			if ($templateName == 'user/profile.tpl' || $templateName == 'manager/people/userProfileForm.tpl' || $templateName == 'user/register.tpl' || $templateName == 'sectionEditor/selectReviewer.tpl' || $templateName == 'sectionEditor/createReviewerForm.tpl') {
 				// fetch the original template.
 				$contents = $smarty->fetch($templateName);
 				if ($templateName == 'user/profile.tpl') {
@@ -138,7 +137,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 					$formTag = '';
 					$submitButton = '<input type="submit" value="' . __('common.search') . '" class="button" />';
 					if (preg_match('|(<form.+?selectReviewer.*?>)|', $contents, $matches)) {
-						$formTag = $matches[1];
+						$formTag .= $matches[1];
 					}
 
 					// if they submitted a search on the interests field, fix up the text search field and set the select dropdown.
@@ -148,8 +147,8 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 					$contents = preg_replace('|(<form.+?selectReviewer.*?>.*?</form>)|s',
 						'$1<br />' . __('search.operator.or') . $formTag .
 						'<input type="hidden" name="searchField" value="interests"/>' .
-						'<input type="hidden" name="searchMatch" value="is"/>' .
-						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search', false, Request::getUserVar('searchField') == 'interests' ? array(Request::getUserVar('search')) : null) . $submitButton . '</p></form>', $contents);
+						'<input type="hidden" name="searchMatch" value="contains"/>' .
+						'<p>' . __('user.interests') . ': &nbsp;' . $this->getReviewerSelect('search[]', true, Request::getUserVar('searchField') == 'interests' ? Request::getUserVar('search') : null) . $submitButton . '</p></form>', $contents);
 				}
 
 				$params[4] = $contents;
@@ -275,7 +274,7 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 	 */
 	function getReviewerSelect($name = "keywords[interests][]", $isMultiple = true, $chosenInterests = null) {
 
-		$html = '<select name="' . $name . '" ';
+		$html = '<select id="reviewerInterestsPluginInterests" name="' . $name . '" ';
 		$html .= $isMultiple ? 'size="5" multiple="multiple">' : '>';
 
 		$journal =& Request::getJournal();
@@ -296,7 +295,6 @@ class ReviewerInterestsPlugin extends GenericPlugin {
 		$vocab = $interestDao->build($journal->getId());
 		$interests = $interestDao->enumerate($vocab->getId(), CONTROLLED_VOCAB_PLUGIN_REVIEWER_INTEREST_KEYWORD);
 		usort($interests, create_function('$s1, $s2', 'return strcmp($s1, $s2);'));
-
 		foreach ($interests as $id => $entry) {
 			$isSelected = in_array($entry, $existingInterests) ? 'selected="selected"' : '';
 			$html .= '<option value="' . htmlentities($entry) . '" ' . $isSelected . '>' . htmlentities($entry) . '</option>';
