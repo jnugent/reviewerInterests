@@ -1,0 +1,56 @@
+diff --git a/classes/user/InterestDAO.inc.php b/classes/user/InterestDAO.inc.php
+index 50ec1f9..1dd6e20 100644
+--- a/classes/user/InterestDAO.inc.php
++++ b/classes/user/InterestDAO.inc.php
+@@ -125,7 +125,7 @@ class InterestDAO extends ControlledVocabDAO {
+ 
+ 			if(!$interestEntry) {
+ 				$interestEntry =& $interestEntryDao->newDataObject(); /* @var $interestEntry InterestEntry */
+-				$interestEntry->setInterest($interest);
++				$interestEntry->setInterest($interest, AppLocale::getLocale());
+ 				$interestEntry->setControlledVocabId($controlledVocab->getId());
+ 				$interestEntry->setId($interestEntryDao->insertObject($interestEntry));
+ 			}
+diff --git a/classes/user/InterestEntry.inc.php b/classes/user/InterestEntry.inc.php
+index da68fa4..5649445 100644
+--- a/classes/user/InterestEntry.inc.php
++++ b/classes/user/InterestEntry.inc.php
+@@ -27,16 +27,16 @@ class InterestEntry extends ControlledVocabEntry {
+ 	 * @return string
+ 	 */
+ 	function getInterest() {
+-		return $this->getData('interest');
++		return $this->getLocalizedData('interest');
+ 	}
+ 
+ 	/**
+ 	 * Set the interest text
+ 	 * @param interest
++	 * @param $locale
+ 	 */
+-	function setInterest($interest) {
+-		$this->setData('interest', $interest);
+-	}
+-}
++	function setInterest($interest, $locale) {
++		$this->setData('interest', $interest, $locale);
++	}}
+ 
+ ?>
+diff --git a/classes/user/InterestEntryDAO.inc.php b/classes/user/InterestEntryDAO.inc.php
+index 9b59ff8..477b9e8 100644
+--- a/classes/user/InterestEntryDAO.inc.php
++++ b/classes/user/InterestEntryDAO.inc.php
+@@ -39,7 +39,11 @@ class InterestEntryDAO extends ControlledVocabEntryDAO {
+ 	 * @return array
+ 	 */
+ 	function getAdditionalFieldNames() {
+-		return parent::getAdditionalFieldNames() + array('interest');
++		return parent::getAdditionalFieldNames();
++	}
++
++	function getLocaleFieldNames() {
++		return array('interest');
+ 	}
+ 
+ 	/**

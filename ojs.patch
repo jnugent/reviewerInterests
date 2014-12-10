@@ -1,0 +1,53 @@
+diff --git a/classes/submission/sectionEditor/SectionEditorSubmissionDAO.inc.php b/classes/submission/sectionEditor/SectionEditorSubmissionDAO.inc.php
+index f30b56f..1d9dd81 100644
+--- a/classes/submission/sectionEditor/SectionEditorSubmissionDAO.inc.php
++++ b/classes/submission/sectionEditor/SectionEditorSubmissionDAO.inc.php
+@@ -780,21 +780,42 @@ class SectionEditorSubmissionDAO extends DAO {
+ 
+ 		$searchSql = '';
+ 		if (isset($search) && isset($searchTypeMap[$searchType])) {
++			if (!is_array($search)) {
++				$search = array($search);
++			}
+ 			$fieldName = $searchTypeMap[$searchType];
++			$searchSql = "AND (";
++
+ 			switch ($searchMatch) {
+ 				case 'is':
+-					$searchSql = "AND LOWER($fieldName) = LOWER(?)";
+-					$paramArray[] = $search;
++					for ($i = 0 ; $i < count($search) ; $i ++) {
++						$searchSql .= "LOWER($fieldName) = LOWER(?) ";
++						if ($i < (count($search) - 1)) {
++							$searchSql .= ' OR ';
++						}
++						$paramArray[] = $search[$i];
++					}
+ 					break;
+ 				case 'contains':
+-					$searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
+-					$paramArray[] = '%' . $search . '%';
++					for ($i = 0 ; $i < count($search) ; $i ++) {
++						$searchSql .= "LOWER($fieldName) LIKE LOWER(?) ";
++						if ($i < (count($search) - 1)) {
++							$searchSql .= ' OR ';
++						}
++						$paramArray[] = '%' . $search[$i] . '%';
++					}
+ 					break;
+ 				case 'startsWith':
+-					$searchSql = "AND LOWER($fieldName) LIKE LOWER(?)";
+-					$paramArray[] = $search . '%';
++					for ($i = 0 ; $i < count($search) ; $i ++) {
++						$searchSql .= "LOWER($fieldName) LIKE LOWER(?) ";
++						if ($i < (count($search) - 1)) {
++							$searchSql .= ' OR ';
++						}
++						$paramArray[] = $search[$i] . '%';
++					}
+ 					break;
+ 			}
++			$searchSql .= ") ";
+ 		} elseif (isset($search)) switch ($searchType) {
+ 			case USER_FIELD_USERID:
+ 				$searchSql = 'AND user_id=?';
